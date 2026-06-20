@@ -118,7 +118,7 @@ node scripts/seed.js
 | Field | Value |
 |-------|-------|
 | Company Domain | `butcherista-co` |
-| Employee ID | `ADMIN-001` |
+| Employee ID | `ADMIN-001 or EMP-001` | 
 | Password | `123456` |
 
 ## Project Structure
