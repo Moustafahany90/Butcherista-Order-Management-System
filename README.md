@@ -123,7 +123,13 @@ To bootstrap a company with an admin user:
 ```bash
 ADMIN_PASSWORD=your-strong-password node scripts/seed.js
 ```
+## Demo Credentials
 
+| Field | Value |
+|-------|-------|
+| Company Domain | `butcherista-co` |
+| Employee ID | `ADMIN-001 or EMP-001` | 
+| Password | `123456` |
 ## Project Structure
 
 ```
