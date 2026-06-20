@@ -124,7 +124,7 @@ To bootstrap a company with an admin user:
 ADMIN_PASSWORD=your-strong-password node scripts/seed.js
 ```
 ## Demo Credentials
-
+Live Demo : butcherista-order-management-system.vercel.app
 | Field | Value |
 |-------|-------|
 | Company Domain | `butcherista-co` |
