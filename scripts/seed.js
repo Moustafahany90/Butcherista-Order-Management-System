@@ -7,11 +7,16 @@
  *   3. Place that file in the project root (or update SERVICE_ACCOUNT_PATH below)
  *
  * Usage:
- *   node scripts/seed.js
+ *   ADMIN_PASSWORD=your-strong-password node scripts/seed.js
  *
- * You can override defaults with environment variables:
+ * Required environment variables:
+ *   ADMIN_PASSWORD=your-strong-password
+ *
+ * Optional overrides:
  *   COMPANY_NAME=MyCo node scripts/seed.js
- *   ADMIN_PASSWORD=securepass123 node scripts/seed.js
+ *   DOMAIN=custom-domain
+ *   ADMIN_NAME="Head Admin"
+ *   ADMIN_EMPLOYEE_ID=ADMIN-001
  */
 
 import { initializeApp, cert } from "firebase-admin/app";
@@ -30,7 +35,11 @@ const COMPANY_NAME = process.env.COMPANY_NAME || "Butcherista Co.";
 const DOMAIN = process.env.DOMAIN || "butcherista-co";
 const ADMIN_NAME = process.env.ADMIN_NAME || "Admin";
 const ADMIN_EMPLOYEE_ID = process.env.ADMIN_EMPLOYEE_ID || "ADMIN-001";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "123456";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+if (!ADMIN_PASSWORD) {
+  console.error("\n  ❌ ADMIN_PASSWORD environment variable is required.\n\n  Usage: ADMIN_PASSWORD=your-strong-password node scripts/seed.js\n");
+  process.exit(1);
+}
 
 // ── Main ──
 async function main() {

@@ -62,7 +62,6 @@ async function main() {
   console.log("✅ Admin Firestore profile re-created!");
   console.log(`   Company ID: ${company.id}`);
   console.log(`   Admin UID:  ${adminRecord.uid}`);
-  console.log("\n   Login: butcherista-co / ADMIN-001 / 123456");
 }
 
 main().catch(console.error);

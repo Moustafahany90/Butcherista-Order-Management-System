@@ -10,6 +10,8 @@ const db = getFirestore();
 
 const SUPER_ADMIN_UID = defineString("SUPER_ADMIN_UID");
 const BOOTSTRAP_KEY = defineString("BOOTSTRAP_KEY");
+const TELEGRAM_BOT_TOKEN = defineString("TELEGRAM_BOT_TOKEN");
+const TELEGRAM_CHAT_ID = defineString("TELEGRAM_CHAT_ID");
 
 /**
  * Verify that the caller is a company admin or super admin.
@@ -180,4 +182,52 @@ export const deleteEmployee = https.onCall(async (data, context) => {
   await auth.deleteUser(targetUserId);
   await db.collection("users").doc(targetUserId).delete();
   return { success: true };
+});
+
+/**
+ * Send a Telegram delivery alert.
+ * Called by the frontend when an order is assigned to a delivery employee.
+ * The bot token and chat ID live server-side (Firebase params), not in the client bundle.
+ */
+export const sendTelegramAlert = https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new https.HttpsError("unauthenticated", "Must be logged in");
+  }
+
+  const { orderNumber, customerName, phone, address, zone, price, deliveryFee, paymentMethod, paymentStatus, assignedDelivery, assignedDeliveryName, notes } = data;
+  if (!assignedDelivery) {
+    return { sent: false, reason: "no_delivery_assigned" };
+  }
+
+  const total = (Number(price) + Number(deliveryFee)).toFixed(2);
+
+  const text = [
+    "NEW DELIVERY ORDER",
+    `Order: #${orderNumber}`,
+    `Customer: ${customerName}`,
+    `Phone: ${phone}`,
+    `Address: ${address}`,
+    `Zone: ${zone}`,
+    `Total: EGP ${total}`,
+    `Payment: ${paymentMethod} (${paymentStatus})`,
+    `Delivery: ${assignedDeliveryName} — ${assignedDelivery}`,
+    `Notes: ${notes || "\u2014"}`,
+  ].join("\n");
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN.value()}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: Number(TELEGRAM_CHAT_ID.value()), text }),
+    });
+    if (!res.ok) {
+      const errBody = await res.text();
+      logger.error("Telegram API error", errBody);
+      return { sent: false, reason: "telegram_api_error" };
+    }
+    return { sent: true };
+  } catch (err) {
+    logger.error("Telegram send failed", err);
+    return { sent: false, reason: "request_failed" };
+  }
 });

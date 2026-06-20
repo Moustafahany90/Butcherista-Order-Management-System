@@ -1,6 +1,6 @@
 # Butcherista — Order Management System
 
-A SaaS order management system for butcher/meat delivery customer service teams. Built with React + TypeScript + Firebase.
+ Order management system for butcher/meat delivery customer service teams. Built with React + TypeScript + Firebase.
 
 ## Tech Stack
 
@@ -80,17 +80,28 @@ A SaaS order management system for butcher/meat delivery customer service teams.
 
 ### Environment Variables
 
-Copy `.env` and fill in your Firebase config:
+Copy `.env.example` to `.env` and fill in your Firebase config:
 
 ```env
-VITE_FIREBASE_API_KEY=
-VITE_FIREBASE_AUTH_DOMAIN=
-VITE_FIREBASE_PROJECT_ID=
-VITE_FIREBASE_STORAGE_BUCKET=
-VITE_FIREBASE_MESSAGING_SENDER_ID=
-VITE_FIREBASE_APP_ID=
-VITE_TELEGRAM_BOT_TOKEN=       # For delivery alerts (optional)
-VITE_TELEGRAM_CHAT_ID=         # For delivery alerts (optional)
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+VITE_FIREBASE_APP_ID=your-app-id
+```
+
+> ⚠️ **Security note:** `VITE_` variables are inlined into the client-side bundle at build time. Never put actual secrets (passwords, private keys, Telegram tokens) in `VITE_` variables. Telegram alerts use a Firebase Callable Function with server-side params instead.
+
+### Firebase Functions Secrets
+
+Telegram delivery alerts, super admin access, and company bootstrap use Firebase Functions secrets:
+
+```bash
+firebase functions:secrets:set TELEGRAM_BOT_TOKEN
+firebase functions:secrets:set TELEGRAM_CHAT_ID
+firebase functions:secrets:set SUPER_ADMIN_UID
+firebase functions:secrets:set BOOTSTRAP_KEY
 ```
 
 ### Install & Run
@@ -106,20 +117,12 @@ npm run build     # Production build
 To bootstrap a company with an admin user:
 
 1. Download your Firebase service account key from **Project Settings → Service accounts → Generate new private key**
-2. Save it as `serviceAccountKey.json` in the project root
-3. Run:
+2. Save it as `serviceAccountKey.json` in the project root (already in `.gitignore`)
+3. Run with a strong password:
 
 ```bash
-node scripts/seed.js
+ADMIN_PASSWORD=your-strong-password node scripts/seed.js
 ```
-
-## Demo Credentials
-
-| Field | Value |
-|-------|-------|
-| Company Domain | `butcherista-co` |
-| Employee ID | `ADMIN-001 or EMP-001` | 
-| Password | `123456` |
 
 ## Project Structure
 

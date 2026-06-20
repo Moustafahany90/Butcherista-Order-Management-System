@@ -25,17 +25,36 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ── Helper: verify Firebase ID token from Authorization header ──
+async function verifyIdToken(req) {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith("Bearer ")) {
+    return null;
+  }
+  try {
+    const decoded = await auth.verifyIdToken(header.slice(7));
+    return decoded;
+  } catch {
+    return null;
+  }
+}
+
 // ── Create employee ──
 app.post("/api/employees", async (req, res) => {
   try {
-    const { name, employeeId, password, companyId, adminUid } = req.body;
-    if (!name || !employeeId || !password || !companyId || !adminUid) {
+    const decoded = await verifyIdToken(req);
+    if (!decoded) {
+      return res.status(401).json({ error: "Missing or invalid auth token" });
+    }
+
+    const { name, employeeId, password, companyId } = req.body;
+    if (!name || !employeeId || !password || !companyId) {
       return res.status(400).json({ error: "Missing fields" });
     }
 
-    // Verify admin
-    const adminDoc = await db.collection("users").doc(adminUid).get();
-    if (!adminDoc.exists || adminDoc.data().role !== "admin") {
+    // Verify the caller is an admin for this company
+    const adminDoc = await db.collection("users").doc(decoded.uid).get();
+    if (!adminDoc.exists || adminDoc.data().role !== "admin" || adminDoc.data().companyId !== companyId) {
       return res.status(403).json({ error: "Not authorized" });
     }
 
@@ -53,7 +72,7 @@ app.post("/api/employees", async (req, res) => {
       role: "employee",
       active: true,
       createdAt: new Date(),
-      createdBy: adminUid,
+      createdBy: decoded.uid,
     });
 
     res.json({ uid: userRecord.uid, employeeId });
